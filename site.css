@@ -28,7 +28,7 @@ nav.menu a.on{border-color:var(--blue);color:#fff}nav.menu a i{margin-right:5px}
 .quote{position:absolute;right:30px;top:40px;font-size:1.9rem;transform:rotate(-6deg);max-width:220px;color:#f4e6d4}
 .socials{display:flex;gap:12px;flex-wrap:wrap}.soc{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#1a2c52;color:#fff;text-decoration:none;font-size:1.1rem;border:1px solid #33497a;transition:.2s}
 .soc:hover{background:var(--blue);transform:translateY(-2px)}
-.layout{max-width:1280px;margin:0;display:grid;grid-template-columns:1fr 330px;gap:26px;padding:24px 20px}
+.layout{max-width:100%;margin:0;display:grid;grid-template-columns:1fr 330px;gap:26px;padding:24px 20px}
 .blk{margin-bottom:26px}.blk h2,.panel h2,.wide h2{font-size:1.3rem;display:flex;gap:10px;align-items:center}.blk h2 i,.panel h2 i{color:var(--navy2)}
 .about-row{display:grid;grid-template-columns:1fr 1.1fr;gap:20px;align-items:start}.about-row p{color:#33425e}
 .btn{display:inline-flex;gap:10px;align-items:center;background:var(--navy2);color:#fff;border:0;border-radius:10px;padding:12px 20px;font-weight:600;cursor:pointer;text-decoration:none;transition:.2s}
