@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Admin · Reuben Ngui</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="/config.js"></script>
+<style>
+:root{--navy:#0a1730;--navy2:#10244b;--blue:#2b86ff;--ink:#0e1f3d;--mute:#5d6b85;--bg:#f2f6fb;--line:#dde6f2;--bad:#c0392b;--ok:#1b8a4b}
+*{box-sizing:border-box}body{margin:0;font:15px/1.5 Inter,system-ui,sans-serif;color:var(--ink);background:var(--bg)}
+h2{margin:.2em 0 .6em}h3{margin:1.2em 0 .4em}.hide{display:none!important}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+label{display:block;font-size:.82rem;color:var(--mute);margin:12px 0 3px}
+input,select,textarea{width:100%;padding:10px;border:2px solid var(--line);border-radius:9px;font:inherit;background:#fff;color:var(--ink)}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);outline:0}input[type=checkbox]{width:auto;margin-right:8px}
+.chk{display:flex;align-items:center;color:var(--ink);font-size:.95rem}
+.btn{background:var(--navy2);color:#fff;border:0;border-radius:9px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer;margin:4px 6px 4px 0}
+.btn.out{background:#fff;color:var(--navy2);border:2px solid var(--navy2)}.btn.bad{background:var(--bad)}.btn.sm{padding:5px 10px;font-size:.82rem}.btn:disabled{opacity:.5;cursor:wait}
+.login{max-width:400px;margin:60px auto;padding:0 14px}.err{color:var(--bad);min-height:1.3em}
+.app{display:flex;min-height:100vh}.side{width:240px;background:var(--navy);color:#fff;padding:16px 10px;flex-shrink:0}
+.side h3{margin:0 8px 12px;font-size:1rem}.nav{display:block;width:100%;text-align:left;background:none;border:0;color:#c8d6ee;padding:10px 12px;border-radius:9px;font:inherit;cursor:pointer}
+.nav.on,.nav:hover{background:var(--navy2);color:#fff}.main{flex:1;padding:22px;min-width:0;max-width:980px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px}
+.stat span{color:var(--mute);font-size:.82rem}.stat b{display:block;font-size:1.8rem}
+.item{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}.item img{width:64px;height:64px;object-fit:cover;border-radius:8px;background:#dfe6f2}
+.item .t{flex:1;min-width:0}.item small{color:var(--mute);display:block}
+.tag{padding:2px 9px;border-radius:99px;font-size:.75rem;font-weight:700;background:#e3f5ea;color:var(--ok)}.tag.d{background:#fff3d6;color:#9a7500}
+.drop{border:2px dashed #9db4d8;border-radius:12px;padding:18px;text-align:center;color:var(--mute);background:#f8fbff}.drop.over{background:#e5f0ff;border-color:var(--blue)}
+.prev{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.prev img{width:90px;height:90px;object-fit:cover;border-radius:8px}
+.toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 18px;border-radius:10px;z-index:9;max-width:90%}.toast.bad{background:var(--bad)}
+dialog{border:0;border-radius:14px;padding:20px;max-width:400px;width:92%}dialog::backdrop{background:rgba(5,12,30,.6)}
+@media(max-width:760px){.app{flex-direction:column}.side{width:100%;display:flex;overflow-x:auto;gap:4px;padding:8px}.side h3{display:none}.nav{white-space:nowrap;width:auto}.main{padding:14px}}
+</style>
+</head>
+<body>
+<div id="toast" class="toast hide" role="status"></div>
+<section id="loginView" class="login hide"><div class="card"><h2>Admin login</h2>
+  <label for="em">Email</label><input id="em" type="email" autocomplete="username">
+  <label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password">
+  <p><button class="btn" id="loginBtn">Log in</button><button class="btn out sm" id="forgot">Forgot password?</button></p><p class="err" id="lerr" role="alert"></p>
+  <a href="/">Back to website</a></div></section>
+<section id="recoverView" class="login hide"><div class="card"><h2>Set a new password</h2>
+  <label for="np">New password (8+ characters)</label><input id="np" type="password" autocomplete="new-password">
+  <p><button class="btn" id="npBtn">Save password</button></p><p class="err" id="nerr"></p></div></section>
+<div id="appView" class="app hide"><aside class="side"><h3>Reuben Ngui · Admin</h3><nav id="nav"></nav></aside><main class="main" id="main"></main></div>
+<dialog id="dlg"><form method="dialog"><p id="dlgMsg"></p><input id="dlgPw" type="password" placeholder="Admin password" required autocomplete="current-password">
+  <p style="text-align:right"><button class="btn out" value="cancel" formnovalidate>Cancel</button><button class="btn bad" value="ok">Confirm</button></p></form></dialog>
+
+<script>
+const sb = supabase.createClient(CONFIG.url, CONFIG.key);
+const $ = id => document.getElementById(id);
+const BUCKET = "portfolio";
+let cats = [], profile = {}, view = "dash", recovering = false, adminEmail = "";
+
+function h(tag, a, ...kids){
+  const e = document.createElement(tag);
+  if(typeof a === "string") e.textContent = a;
+  else if(a) for(const [k, v] of Object.entries(a)){
+    if(k === "class") e.className = v; else if(k.startsWith("on")) e[k] = v; else if(v !== false && v != null) e.setAttribute(k, v === true ? "" : v);
+  }
+  kids.flat().forEach(c => { if(c != null && c !== false) e.append(c.nodeType ? c : document.createTextNode(c)); });
+  return e;
+}
+let tt; function toast(m, bad){ const t = $("toast"); t.textContent = m; t.className = "toast" + (bad ? " bad" : ""); clearTimeout(tt); tt = setTimeout(() => t.classList.add("hide"), 4500); }
+function askPw(msg){ return new Promise(res => { const d = $("dlg"); $("dlgMsg").textContent = msg; $("dlgPw").value = ""; d.returnValue = ""; d.showModal(); d.onclose = () => res(d.returnValue === "ok" ? $("dlgPw").value : null); }); }
+const show = v => ["loginView", "recoverView", "appView"].forEach(x => $(x).classList.toggle("hide", x !== v));
+
+/* ---------- authentication ---------- */
+sb.auth.onAuthStateChange(ev => { if(ev === "PASSWORD_RECOVERY") recovering = true; });
+async function enter(){
+  const { data: s } = await sb.auth.getSession();
+  if(recovering){ show("recoverView"); return; }
+  if(!s.session){ show("loginView"); return; }
+  const { data: ok } = await sb.rpc("is_portfolio_admin");
+  if(!ok){ await sb.auth.signOut(); show("loginView"); $("lerr").textContent = "This account is not the administrator."; return; }
+  adminEmail = s.session.user.email; show("appView"); await refreshBase(); go(view);
+}
+$("loginBtn").onclick = async () => {
+  $("lerr").textContent = "";
+  const { error } = await sb.auth.signInWithPassword({ email: $("em").value.trim(), password: $("pw").value });
+  if(error){ $("lerr").textContent = "Wrong email or password."; return; } $("pw").value = ""; enter();
+};
+$("pw").addEventListener("keydown", e => e.key === "Enter" && $("loginBtn").click());
+$("forgot").onclick = async () => {
+  if(!$("em").value.trim()){ $("lerr").textContent = "Type your admin email first."; return; }
+  await sb.auth.resetPasswordForEmail($("em").value.trim(), { redirectTo: location.origin + "/admin/" });
+  toast("If that is the admin email, a reset link has been sent.");
+};
+$("npBtn").onclick = async () => {
+  if($("np").value.length < 8){ $("nerr").textContent = "Use at least 8 characters."; return; }
+  const { error } = await sb.auth.updateUser({ password: $("np").value });
+  if(error){ $("nerr").textContent = error.message; return; } recovering = false; history.replaceState(null, "", location.pathname); enter();
+};
+async function logout(){ await sb.auth.signOut(); location.href = "/admin/login"; }
+
+async function refreshBase(){
+  const [c, p] = await Promise.all([sb.from("categories").select("*").order("display_order"), sb.from("profiles").select("*").eq("id", 1).maybeSingle()]);
+  cats = c.data || []; profile = p.data || {};
+}
+
+/* ---------- image upload (resized in the browser, stored in Supabase Storage) ---------- */
+function resize(file, max, q){
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => { const s = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement("canvas");
+      c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(img.src); c.toBlob(b => b ? res(b) : rej(new Error("Could not process image")), "image/jpeg", q); };
+    img.onerror = () => rej(new Error("That file is not a valid image")); img.src = URL.createObjectURL(file);
+  });
+}
+function checkFile(f){
+  if(!["image/jpeg", "image/png", "image/webp"].includes(f.type)) throw new Error(f.name + ": only JPG, PNG or WebP images are allowed");
+  if(f.size > 15 * 1024 * 1024) throw new Error(f.name + ": file is larger than 15 MB");
+}
+async function upload(file, folder, withThumb){
+  checkFile(file);
+  const id = Date.now() + "-" + Math.random().toString(36).slice(2, 8), st = sb.storage.from(BUCKET), out = {};
+  let r = await st.upload(folder + "/" + id + ".jpg", await resize(file, 1800, .85), { contentType: "image/jpeg" }); if(r.error) throw r.error;
+  out.url = st.getPublicUrl(folder + "/" + id + ".jpg").data.publicUrl;
+  if(withThumb){ r = await st.upload(folder + "/thumb-" + id + ".jpg", await resize(file, 520, .8), { contentType: "image/jpeg" }); if(r.error) throw r.error;
+    out.thumb = st.getPublicUrl(folder + "/thumb-" + id + ".jpg").data.publicUrl; }
+  return out;
+}
+async function removeStored(...urls){
+  const paths = urls.filter(Boolean).map(u => (u.split("/object/public/" + BUCKET + "/")[1] || "")).filter(Boolean);   // starter /images files are not in storage
+  if(paths.length) await sb.storage.from(BUCKET).remove(paths);
+}
+
+/* ---------- generic form + CRUD engine ---------- */
+function buildForm(fields, row){
+  const form = { inputs: {}, files: {} }, el = h("div");
+  fields.forEach(f => {
+    let inp;
+    if(f.t === "area") inp = h("textarea", { rows: f.rows || 5, maxlength: f.max });
+    else if(f.t === "select"){ inp = h("select"); f.opts.forEach(([v, l]) => inp.append(h("option", { value: v }, l))); }
+    else if(f.t === "check") inp = h("input", { type: "checkbox" });
+    else if(f.t === "image"){
+      inp = h("input", { type: "file", accept: "image/jpeg,image/png,image/webp", multiple: !!f.multi });
+      const prev = h("div", { class: "prev" }), drop = h("div", { class: "drop" }, "Drag and drop " + (f.multi ? "photos" : "a photo") + " here, or choose below", h("div", inp), prev);
+      const show = () => { prev.innerHTML = ""; [...inp.files].forEach(x => prev.append(h("img", { src: URL.createObjectURL(x), alt: "Preview" })));
+        if(!inp.files.length && row && row[f.k]) prev.append(h("img", { src: row[f.k], alt: "Current image" })); };
+      inp.onchange = show; show();
+      ["dragover", "dragenter"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+      ["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+      drop.addEventListener("drop", e => { inp.files = e.dataTransfer.files; show(); });
+      form.files[f.k] = inp; el.append(h("label", f.l), drop); return;
+    } else inp = h("input", { type: f.t || "text", maxlength: f.max, min: f.min, max: f.maxv });
+    if(f.t === "check"){ inp.checked = row ? !!row[f.k] : !!f.def; el.append(h("label", { class: "chk" }, inp, f.l)); }
+    else { const v = row ? row[f.k] : f.def; inp.value = v == null ? "" : v; el.append(h("label", f.l), inp); }
+    form.inputs[f.k] = inp;
+  });
+  form.fields = fields; form.el = el;
+  form.values = () => {
+    const v = {};
+    fields.forEach(f => { if(f.t === "image") return; const i = form.inputs[f.k];
+      let x = f.t === "check" ? i.checked : i.value.trim();
+      if(f.t === "number") x = x === "" ? 0 : parseInt(x, 10);
+      else if(f.t === "select" && f.k.endsWith("_id")) x = x === "" ? null : Number(x);
+      else if(x === "" && f.t !== "check") x = null;
+      v[f.k] = x; });
+    return v;
+  };
+  return form;
+}
+function missing(fields, v){ const f = fields.find(f => f.req && f.t !== "image" && !v[f.k]); return f ? f.l : null; }
+
+const SEC = {
+  categories: { table: "categories", name: "Category", plural: "categories",
+    fields: () => [{ k: "name", l: "Category name", max: 80, req: true }, { k: "description", l: "Short description", max: 200 }, { k: "display_order", l: "Order (1 = first)", t: "number", min: 0 }] },
+  photos: { table: "photos", name: "Photo", folder: "photos", thumbKey: "thumbnail_url", multi: true, imgKey: "image_url",
+    fields: () => [
+      { k: "image_url", l: "Photograph (JPG, PNG or WebP)", t: "image", multi: true },
+      { k: "title", l: "Title", max: 120, req: true }, { k: "caption", l: "Short caption", max: 200 },
+      { k: "memory", l: "Memory / story behind the photo", t: "area", max: 5000 }, { k: "photo_date", l: "Photo date", t: "date" },
+      { k: "location", l: "Location", max: 120 }, { k: "category_id", l: "Category", t: "select", opts: [["", "No category"], ...cats.map(c => [c.id, c.name])] },
+      { k: "alt_text", l: "Alternative text (describes the photo for screen readers)", max: 200 },
+      { k: "is_featured", l: "Featured (shown in the homepage highlights)", t: "check" },
+      { k: "status", l: "Status", t: "select", opts: [["published", "Published"], ["draft", "Draft (hidden)"]], def: "published" }] },
+  story: { table: "story_chapters", name: "Chapter", folder: "story", imgKey: "cover_image_url",
+    fields: () => [
+      { k: "title", l: "Chapter title", max: 120, req: true }, { k: "content", l: "Chapter text (blank line = new paragraph)", t: "area", rows: 10, max: 20000 },
+      { k: "chapter_date", l: "Date (optional)", t: "date" }, { k: "cover_image_url", l: "Cover photo (optional)", t: "image" },
+      { k: "display_order", l: "Order (1 = first)", t: "number", min: 0 }, { k: "status", l: "Status", t: "select", opts: [["published", "Published"], ["draft", "Draft (hidden)"]], def: "draft" }] },
+  interests: { table: "interests", name: "Interest", folder: "interests", imgKey: "image_url",
+    fields: () => [
+      { k: "title", l: "Title (shown in “Things I Love”)", max: 80, req: true }, { k: "card_title", l: "Highlight card title (fills one of the 4 cards on the homepage, optional)", max: 60 },
+      { k: "tagline", l: "Short tagline", max: 120 }, { k: "description", l: "Description", t: "area", max: 3000 },
+      { k: "icon", l: "Icon name (Font Awesome, e.g. fa-futbol, fa-music, fa-plane)", max: 40, def: "fa-heart", req: true }, { k: "image_url", l: "Image (optional)", t: "image" },
+      { k: "display_order", l: "Order (1 = first)", t: "number", min: 0 }, { k: "status", l: "Status", t: "select", opts: [["published", "Published"], ["draft", "Draft (hidden)"]], def: "published" }] }
+};
+
+async function manage(key){
+  await refreshBase(); const S = SEC[key], fields = S.fields(), main = $("main"); main.innerHTML = "";
+  const { data: rows, error } = await sb.from(S.table).select("*").order(key === "photos" ? "created_at" : "display_order", { ascending: key !== "photos" });
+  if(error){ toast(error.message, true); return; }
+  let editing = null, form;
+  const formBox = h("div", { class: "card" }), list = h("div", { class: "card" });
+  const draw = () => {
+    formBox.innerHTML = ""; form = buildForm(fields, editing);
+    const save = h("button", { class: "btn" }, editing ? "Save Changes" : (key === "photos" ? "Save New Photo" : "Save New " + S.name));
+    save.onclick = () => doSave(save);
+    formBox.append(h("h3", { style: "margin-top:0" }, editing ? "Edit " + S.name : "Add a " + S.name), form.el, save,
+      editing ? h("button", { class: "btn out", onclick: () => { editing = null; draw(); } }, "Cancel Editing") : null);
+  };
+  async function doSave(btn){
+    const v = form.values(), miss = missing(fields, v); if(miss){ toast("Please fill in: " + miss, true); return; }
+    const imgField = fields.find(f => f.t === "image"), inp = imgField && form.files[imgField.k], files = inp ? [...inp.files] : [];
+    if(key === "photos" && !editing && !files.length){ toast("Choose at least one photograph.", true); return; }
+    btn.disabled = true;
+    try{
+      if(files.length > 1 && !editing){                                  // several photos at once
+        for(const f of files){ const u = await upload(f, S.folder, !!S.thumbKey);
+          const t = v.title || f.name.replace(/\.[^.]+$/, ""); const { error } = await sb.from(S.table).insert({ ...v, title: t, [S.imgKey]: u.url, [S.thumbKey]: u.thumb }); if(error) throw error; }
+        toast(files.length + " photos saved.");
+      }else{
+        const old = editing ? [editing[S.imgKey], S.thumbKey && editing[S.thumbKey]] : [];
+        if(files.length){ const u = await upload(files[0], S.folder, !!S.thumbKey); v[S.imgKey] = u.url; if(S.thumbKey) v[S.thumbKey] = u.thumb; }
+        const r = editing ? await sb.from(S.table).update(v).eq("id", editing.id) : await sb.from(S.table).insert(v);
+        if(r.error) throw r.error;
+        if(editing && files.length) await removeStored(...old);
+        toast(editing ? "Changes saved." : S.name + " saved.");
+      }
+      manage(key);
+    }catch(e){ toast("Could not save: " + (e.message || e), true); btn.disabled = false; }
+  }
+  const rowEl = r => h("div", { class: "item" }, r[S.thumbKey] || r[S.imgKey] ? h("img", { src: r[S.thumbKey] || r[S.imgKey], alt: "" }) : null,
+    h("div", { class: "t" }, h("b", r.title || r.name), h("small", [r.caption || r.tagline || (key === "categories" ? r.description : "") || "", r.category_id ? (cats.find(c => c.id === r.category_id) || {}).name : ""].filter(Boolean).join(" · ")),
+      r.status ? h("span", { class: "tag" + (r.status === "draft" ? " d" : "") }, r.status === "draft" ? "Draft" : "Published") : null),
+    h("button", { class: "btn sm out", onclick: () => { editing = r; draw(); scrollTo(0, 0); } }, "Edit"),
+    ("status" in r) && h("button", { class: "btn sm out", onclick: async () => { const { error } = await sb.from(S.table).update({ status: r.status === "draft" ? "published" : "draft" }).eq("id", r.id);
+      if(error) toast(error.message, true); else { toast(r.status === "draft" ? "Published." : "Unpublished."); manage(key); } } }, r.status === "draft" ? "Publish" : "Unpublish"),
+    h("button", { class: "btn sm bad", onclick: async () => { if(!confirm("Delete “" + (r.title || r.name) + "”? This cannot be undone.")) return;
+      const { error } = await sb.from(S.table).delete().eq("id", r.id); if(error){ toast(error.message, true); return; }
+      await removeStored(r[S.imgKey], S.thumbKey && r[S.thumbKey]); toast("Deleted."); manage(key); } }, "Delete"));
+  list.append(h("h3", { style: "margin-top:0" }, "All " + (S.plural || S.name.toLowerCase() + "s") + " (" + rows.length + ")"), ...rows.map(rowEl), rows.length ? null : h("p", "Nothing here yet."));
+  main.append(h("h2", "Manage " + (key === "photos" ? "Photos & Memories" : key === "story" ? "Story" : key === "categories" ? "Categories" : "Interests")), formBox, list); draw();
+}
+
+/* ---------- profile / site content ---------- */
+const PF = {
+  hero: [{ k: "full_name", l: "Full name (always shown as typed)", max: 80, req: true }, { k: "tagline", l: "Subtitle", max: 120 }, { k: "hero_intro", l: "Hero introduction", t: "area", rows: 4 },
+    { k: "location_label", l: "Hero location text", max: 80 }, { k: "born_info", l: "Birth / milestone info (hidden until filled in)", max: 120 }, { k: "lifestyle", l: "Lifestyle line", max: 120 },
+    { k: "hero_quote", l: "Decorative quote", max: 80 }, { k: "hero_image_url", l: "Hero portrait", t: "image" }, { k: "background_image_url", l: "Hero background photo", t: "image" }],
+  about: [{ k: "about_text", l: "About text (short)", t: "area", rows: 5 }, { k: "about_long", l: "More About Me (full biography)", t: "area", rows: 10 },
+    { k: "location", l: "Quick facts: location", max: 80 }, { k: "education", l: "Quick facts: education", max: 120 }, { k: "occupation", l: "Quick facts: work", max: 120 }, { k: "personal_motto", l: "Personal motto", max: 120 }],
+  story: [{ k: "story_intro", l: "My Story introduction", t: "area", rows: 5 }],
+  footer: [{ k: "footer_text", l: "Footer message", t: "area", rows: 3 }, { k: "footer_quote", l: "Footer closing quote", max: 80 },
+    { k: "meta_description", l: "Website description (search engines)", t: "area", rows: 3, max: 300 }],
+  contact: [{ k: "contact_email", l: "Contact email", t: "email", max: 120 }, { k: "whatsapp_number", l: "WhatsApp number, international format, digits only (e.g. 2547XXXXXXXX)", max: 20 }]
+};
+async function profileView(groups, title, extra){
+  const main = $("main"); main.innerHTML = ""; await refreshBase();
+  const fields = groups.flatMap(g => PF[g]), form = buildForm(fields, profile), save = h("button", { class: "btn" }, "Save Changes");
+  save.onclick = async () => {
+    const v = form.values(); if(!v.full_name && fields.some(f => f.k === "full_name")){ toast("Name is required.", true); return; }
+    if(v.whatsapp_number) v.whatsapp_number = v.whatsapp_number.replace(/\D/g, "");
+    save.disabled = true;
+    try{
+      for(const f of fields.filter(f => f.t === "image")){ const file = form.files[f.k].files[0];
+        if(file){ const u = await upload(file, "site", false); const old = profile[f.k]; v[f.k] = u.url; await removeStored(old); } }
+      const { error } = await sb.from("profiles").update(v).eq("id", 1); if(error) throw error; toast("Changes saved."); profileView(groups, title, extra);
+    }catch(e){ toast("Could not save: " + (e.message || e), true); save.disabled = false; }
+  };
+  main.append(h("h2", title), h("div", { class: "card" }, form.el, save), extra ? await extra() : null);
+}
+async function socialBlock(){
+  const { data } = await sb.from("social_links").select("*").order("display_order"), rows = data || [], card = h("div", { class: "card" }, h("h3", { style: "margin-top:0" }, "Social media links"),
+    h("p", { style: "color:var(--mute)" }, "A link only appears on the website when it has a web address and is switched on. WhatsApp uses the number above."));
+  const ctl = rows.map(r => { const u = h("input", { type: "url", placeholder: "https://…", maxlength: 300 }); u.value = r.profile_url || ""; const c = h("input", { type: "checkbox" }); c.checked = r.is_enabled;
+    card.append(h("label", r.platform.toUpperCase()), u, h("label", { class: "chk" }, c, "Show on website")); return { r, u, c }; });
+  card.append(h("button", { class: "btn", onclick: async () => {
+    for(const { r, u, c } of ctl){ const url = u.value.trim(); if(url && !/^https?:\/\//i.test(url)){ toast(r.platform + ": address must start with https://", true); return; }
+      const { error } = await sb.from("social_links").update({ profile_url: url || null, is_enabled: c.checked && !!url }).eq("id", r.id); if(error){ toast(error.message, true); return; } }
+    toast("Social links saved."); } }, "Save social links"));
+  return card;
+}
+
+/* ---------- site text, colours and section switches ---------- */
+const SET = [  // [group, key, label, default, type]
+  ["Navigation","nav_home","Menu: Home","Home"],["Navigation","nav_about","Menu: About","About"],["Navigation","nav_photos","Menu: Photos","Photos"],
+  ["Navigation","nav_story","Menu: My Story","My Story"],["Navigation","nav_interests","Menu: Interests","Interests"],["Navigation","nav_gallery","Menu: Gallery","Gallery"],
+  ["Navigation","nav_contact","Menu: Contact","Contact"],["Navigation","search_placeholder","Search box placeholder","Search Reuben..."],
+  ["Hero","hero_hello","Greeting above the name","Hey there,"],
+  ["About & Photos","about_heading","About heading","About Reuben"],["About & Photos","btn_more_about","“More About Me” button","More About Me"],
+  ["About & Photos","photos_heading","Photos heading","Reuben’s Photos"],["About & Photos","btn_view_all","“View All Photos” link","View All Photos"],
+  ["About & Photos","facts_heading","Quick Facts heading","Quick Facts"],
+  ["Story & Interests","story_heading","My Story heading","My Story"],["Story & Interests","btn_read_story","Story button","Read More About My Journey"],
+  ["Story & Interests","loves_heading","Things I Love heading","Things I Love"],["Story & Interests","interests_heading","Interests section heading","Interests"],
+  ["Story & Interests","interests_intro","Interests section introduction","The things that keep life interesting. Tap one to read more.","area"],
+  ["Gallery","gallery_heading","Gallery heading","Gallery"],["Gallery","gallery_search_ph","Gallery search placeholder","Search photos, captions and memories"],
+  ["Gallery","chip_all","Filter button for all photos","All"],["Gallery","btn_load_more","“Load more” button","Load more photos"],
+  ["Contact","contact_heading","Contact heading","Let’s Connect"],["Contact","contact_intro","Contact introduction","Whether it’s a conversation, collaboration or just to say hi, I’d love to hear from you.","area"],
+  ["Contact","btn_whatsapp","WhatsApp button","Message on WhatsApp"],["Contact","wa_message","WhatsApp pre-filled message","Hello Reuben, I visited your website and would like to connect with you.","area"],
+  ["Contact","btn_email","Email button","Send Email"],["Contact","email_subject","Email subject line","Hello from your website"],["Contact","btn_send","Contact form button","Send Message"],
+  ["Footer","footer_elsewhere","Footer: social heading","Find Reuben Elsewhere"],["Footer","footer_connect","Footer: connect heading","Let’s Connect"],
+  ["Footer","footer_connect_text","Footer: connect text","Whether it’s a conversation, collaboration or just to say hi.","area"],
+  ["Footer","btn_get_in_touch","Footer button","Get in Touch"],["Footer","footer_rights","Footer: rights text","All rights reserved."],
+  ["Colours","color_navy","Main dark colour (header, footer, buttons)","#0a1730","color"],["Colours","color_blue","Accent colour (highlights, links)","#2b86ff","color"],
+  ["Sections","show_about","Show the About section","true","check"],["Sections","show_photos","Show the Photos highlights","true","check"],
+  ["Sections","show_story","Show the My Story panel","true","check"],["Sections","show_interests","Show the Interests section","true","check"],
+  ["Sections","show_gallery","Show the Gallery section","true","check"],["Sections","show_contact","Show the Contact section","true","check"]
+];
+async function settingsView(groups, title){
+  const main = $("main"); main.innerHTML = "";
+  const { data } = await sb.from("site_settings").select("*"), cur = Object.fromEntries((data || []).map(r => [r.key, r.value]));
+  const defs = SET.filter(x => groups.includes(x[0])), ctl = {}, card = h("div", { class: "card" }); let last = "";
+  defs.forEach(([g, k, l, d, t]) => {
+    if(g !== last){ card.append(h("h3", { style: last ? "" : "margin-top:0" }, g)); last = g; }
+    const v = cur[k] ?? d;
+    if(t === "check"){ const c = h("input", { type: "checkbox" }); c.checked = v !== "false"; card.append(h("label", { class: "chk" }, c, l)); ctl[k] = () => String(c.checked); }
+    else{ const i = t === "area" ? h("textarea", { rows: 2, maxlength: 400 }) : h("input", { type: t || "text", maxlength: 200 }); i.value = v; card.append(h("label", l), i); ctl[k] = () => i.value.trim(); }
+  });
+  card.append(h("p", null,
+    h("button", { class: "btn", onclick: async () => {
+      const rows = Object.keys(ctl).map(k => ({ key: k, value: ctl[k]() }));
+      const { error } = await sb.from("site_settings").upsert(rows, { onConflict: "key" });
+      if(error) toast("Could not save: " + error.message, true); else toast("Changes saved. Refresh the website to see them."); } }, "Save Changes"),
+    h("button", { class: "btn out", onclick: async () => { if(!confirm("Restore the original text and settings on this page?")) return;
+      const { error } = await sb.from("site_settings").delete().in("key", Object.keys(ctl)); if(error) toast(error.message, true); else { toast("Defaults restored."); settingsView(groups, title); } } }, "Restore defaults")));
+  main.append(h("h2", title), card);
+}
+
+/* ---------- views ---------- */
+const NAV = [["dash", "Dashboard"], ["photos", "Manage Photos"], ["memories", "Manage Memories"], ["story", "Manage Story"], ["interests", "Manage Interests"], ["categories", "Manage Categories"], ["labels", "Site Text & Labels"], ["appearance", "Appearance & Sections"],
+  ["about", "Edit About Information"], ["social", "Social Media Settings"], ["contact", "Contact Settings"], ["account", "Account Settings"]];
+function go(v){
+  view = v; const n = $("nav"); n.innerHTML = "";
+  NAV.forEach(([k, l]) => n.append(h("button", { class: "nav" + (view === k ? " on" : ""), onclick: () => go(k) }, l)));
+  n.append(h("button", { class: "nav", onclick: logout }, "Logout"));
+  ({ dash: dashboard, photos: () => manage("photos"), memories: () => manage("photos"), story: () => manage("story"), interests: () => manage("interests"), categories: () => manage("categories"),
+     labels: () => settingsView(["Navigation", "Hero", "About & Photos", "Story & Interests", "Gallery", "Contact", "Footer"], "Site Text & Labels"),
+     appearance: () => settingsView(["Colours", "Sections"], "Appearance & Sections"),
+     about: () => profileView(["hero", "about", "story", "footer"], "Edit About Information & Site Content"),
+     social: () => profileView([], "Social Media Settings", socialBlock),
+     contact: () => profileView(["contact"], "Contact Settings"), account: account })[v]();
+}
+async function dashboard(){
+  const cnt = async (t, f) => { let q = sb.from(t).select("id", { count: "exact", head: true }); if(f) q = f(q); const { count } = await q; return count ?? 0; };
+  const [pub, dr, ch, it] = await Promise.all([cnt("photos", q => q.eq("status", "published")), cnt("photos", q => q.eq("status", "draft")), cnt("story_chapters"), cnt("interests")]);
+  const { data: recent } = await sb.from("photos").select("title,updated_at,status").order("updated_at", { ascending: false }).limit(5);
+  const st = (l, v) => h("div", { class: "stat" }, h("span", l), h("b", String(v)));
+  $("main").innerHTML = ""; $("main").append(h("h2", "Dashboard"), h("div", { class: "stats" }, st("Published photos", pub), st("Draft photos", dr), st("Story chapters", ch), st("Interests", it)),
+    h("div", { class: "card", style: "margin-top:16px" }, h("h3", { style: "margin-top:0" }, "Recently updated"),
+      ...(recent || []).map(r => h("div", { class: "item" }, h("div", { class: "t" }, h("b", r.title), h("small", new Date(r.updated_at).toLocaleString())), h("span", { class: "tag" + (r.status === "draft" ? " d" : "") }, r.status))),
+      (recent || []).length ? null : h("p", "No photos yet.")), h("a", { class: "btn out", href: "/", target: "_blank" }, "View website"));
+}
+function account(){
+  const pw = h("input", { type: "password", placeholder: "New password (8+ characters)", autocomplete: "new-password" });
+  $("main").innerHTML = ""; $("main").append(h("h2", "Account Settings"), h("div", { class: "card" }, h("p", null, "Signed in as ", h("b", adminEmail)),
+    h("p", { style: "color:var(--mute)" }, "This website has exactly one administrator. No other account can be given admin access."), h("label", "Change password"), pw,
+    h("button", { class: "btn", onclick: async () => { if(pw.value.length < 8){ toast("Use at least 8 characters.", true); return; }
+      const { error } = await sb.auth.updateUser({ password: pw.value }); if(error) toast(error.message, true); else { pw.value = ""; toast("Password changed."); } } }, "Change password"),
+    h("button", { class: "btn out", onclick: logout }, "Logout")));
+}
+enter();
+</script>
+</body>
+</html>

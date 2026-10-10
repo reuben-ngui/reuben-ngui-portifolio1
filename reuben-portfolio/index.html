@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reuben Ngui | Personal Portfolio</title>
+<meta name="description" content="Personal website of Reuben Ngui: photos, story, interests and ways to connect.">
+<meta property="og:type" content="website"><meta property="og:title" content="Reuben Ngui"><meta property="og:image" content="/images/photo-1.jpg">
+<meta property="og:description" content="Just Reuben. Nothing complicated.">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Reuben Ngui"}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&family=Inter:wght@400;500;600;800&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="/site.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="/config.js"></script>
+</head>
+<body>
+<header class="top"><div class="bar">
+  <a class="brand" href="#home" aria-label="Reuben Ngui, home"><span class="script" id="b1">Reuben</span> <b id="b2">Ngui</b></a>
+  <nav class="menu" id="menu" aria-label="Main">
+    <a href="#home" data-s="home"><i class="fa-solid fa-house"></i><span data-t="nav_home">Home</span></a><a href="#about" data-s="about"><span data-t="nav_about">About</span></a>
+    <a href="#photos" data-s="photos"><span data-t="nav_photos">Photos</span></a><a href="#story" data-s="story"><span data-t="nav_story">My Story</span></a>
+    <a href="#interests" data-s="interests"><span data-t="nav_interests">Interests</span></a><a href="#gallery" data-s="gallery"><span data-t="nav_gallery">Gallery</span></a><a href="#contact" data-s="contact"><span data-t="nav_contact">Contact</span></a>
+  </nav>
+  <div class="search" role="search"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+    <input id="q" type="search" placeholder="Search Reuben..." data-ph="search_placeholder" aria-label="Search the site" autocomplete="off">
+    <div id="sres" role="listbox" hidden></div></div>
+  <button id="burger" aria-label="Open menu" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
+</div></header>
+
+<section id="home" class="hero">
+  <div class="in" id="heroIn">
+    <div class="portrait"><img id="portrait" alt="Portrait of Reuben Ngui" hidden></div>
+    <div class="txt">
+      <div class="script hey" data-t="hero_hello">Hey there,</div>
+      <h1><span id="h1a">Reuben</span> <span class="blue" id="h1b">Ngui</span></h1>
+      <p class="tag" id="tagline">Just Reuben. Nothing complicated.</p>
+      <p class="intro" id="heroIntro"></p>
+      <div class="facts" id="heroFacts"></div>
+      <div class="socials" id="heroSocial"></div>
+    </div>
+    <div class="quote script" id="heroQuote"></div>
+  </div>
+</section>
+
+<div class="layout">
+  <div class="main">
+    <section id="about" class="blk"><div class="about-row">
+      <div><h2><i class="fa-solid fa-user"></i> <span data-t="about_heading">About Reuben</span></h2><p id="aboutText"></p>
+        <button class="btn" id="moreAbout"><span data-t="btn_more_about">More About Me</span> <i class="fa-solid fa-arrow-right"></i></button></div>
+      <div class="cards4" id="hl"></div>
+    </div></section>
+    <section id="photos" class="blk">
+      <div class="hd"><h2><i class="fa-solid fa-camera"></i> <span data-t="photos_heading">Reuben’s Photos</span></h2><a href="#gallery" class="lnk" id="viewAll"><span data-t="btn_view_all">View All Photos</span> <i class="fa-solid fa-arrow-right"></i></a></div>
+      <div class="pgrid" id="featured"></div>
+    </section>
+  </div>
+  <aside class="side">
+    <div class="panel"><h2><i class="fa-solid fa-circle-info"></i> <span data-t="facts_heading">Quick Facts</span></h2><div id="facts"></div></div>
+    <div class="panel" id="story"><h2><i class="fa-solid fa-book-open"></i> <span data-t="story_heading">My Story</span></h2><p id="storyIntro"></p>
+      <button class="btn" id="readStory" style="font-size:.85rem;padding:10px 16px"><span data-t="btn_read_story">Read More About My Journey</span> <i class="fa-solid fa-arrow-right"></i></button></div>
+    <div class="panel"><h2><i class="fa-solid fa-heart"></i> <span data-t="loves_heading">Things I Love</span></h2><div class="tags" id="loves"></div></div>
+  </aside>
+</div>
+
+<section id="interests" class="wide"><h2><i class="fa-solid fa-star" style="color:var(--blue)"></i> <span data-t="interests_heading">Interests</span></h2>
+  <p data-t="interests_intro">The things that keep life interesting. Tap one to read more.</p><div class="igrid" id="igrid"></div></section>
+
+<section id="gallery" class="wide"><h2><i class="fa-solid fa-images" style="color:var(--blue)"></i> <span data-t="gallery_heading">Gallery</span></h2>
+  <div class="chips" id="chips" role="group" aria-label="Filter by category"></div>
+  <div class="gtools"><input id="gq" type="search" placeholder="Search photos, captions and memories" data-ph="gallery_search_ph" aria-label="Search photos">
+    <select id="gs" aria-label="Sort photos"><option value="new">Newest first</option><option value="old">Oldest first</option><option value="az">Title A to Z</option></select></div>
+  <div class="pgrid" id="ggrid" style="margin-top:16px"></div>
+  <p class="center"><button class="btn out" id="more" hidden><span data-t="btn_load_more">Load more photos</span></button></p>
+</section>
+
+<section id="contact" class="wide"><h2><i class="fa-solid fa-paper-plane" style="color:var(--blue)"></i> <span data-t="contact_heading">Let’s Connect</span></h2>
+  <p data-t="contact_intro">Whether it’s a conversation, collaboration or just to say hi, I’d love to hear from you.</p>
+  <div class="contact">
+    <div class="cbtns"><a class="btn wa" id="waBtn" target="_blank" rel="noopener" hidden><i class="fa-brands fa-whatsapp"></i> <span data-t="btn_whatsapp">Message on WhatsApp</span></a>
+      <a class="btn" id="mailBtn" hidden><i class="fa-solid fa-envelope"></i> <span data-t="btn_email">Send Email</span></a>
+      <div class="socials" id="contactSocial"></div></div>
+    <form class="form" id="cf" novalidate>
+      <label for="cn">Full name</label><input id="cn" maxlength="80" autocomplete="name" required>
+      <label for="ce">Email address</label><input id="ce" type="email" maxlength="120" autocomplete="email" required>
+      <label for="cs">Subject</label><input id="cs" maxlength="120" required>
+      <label for="cm">Message</label><textarea id="cm" rows="5" maxlength="4000" required></textarea>
+      <input class="hp" id="cw" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <p><button class="btn" id="csend" type="submit"><span data-t="btn_send">Send Message</span> <i class="fa-solid fa-arrow-right"></i></button></p>
+      <p class="msg" id="cmsg" role="status"></p>
+    </form>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="fcols">
+    <div class="q script" id="fText"></div>
+    <div class="fc"><h3 style="justify-content:center"><i class="fa-solid fa-link"></i> <span data-t="footer_elsewhere">Find Reuben Elsewhere</span></h3><div class="socials" id="footSocial"></div></div>
+    <div class="fr"><h3 class="script" style="justify-content:flex-end;font-size:1.5rem"><i class="fa-regular fa-paper-plane"></i> <span data-t="footer_connect">Let’s Connect</span></h3>
+      <p data-t="footer_connect_text">Whether it’s a conversation, collaboration or just to say hi.</p><a class="btn out" href="#contact"><span data-t="btn_get_in_touch">Get in Touch</span> <i class="fa-solid fa-arrow-right"></i></a></div>
+  </div>
+  <div class="fbar"><div><span><i class="fa-solid fa-crown"></i> <b id="fName">Reuben Ngui</b></span>
+    <span>© <span id="yr"></span> <span id="fName2">Reuben Ngui</span>. <span data-t="footer_rights">All rights reserved.</span></span><span class="script" id="fQuote"></span></div></div>
+</footer>
+
+<dialog id="dlg" aria-label="Details"><button class="x" id="dx" aria-label="Close">×</button><div id="dlgBody"></div></dialog>
+
+<script>
+const sb = supabase.createClient(CONFIG.url, CONFIG.key);
+const $ = id => document.getElementById(id);
+function h(tag, a, ...kids){
+  const e = document.createElement(tag);
+  if(typeof a === "string") e.textContent = a;
+  else if(a) for(const [k, v] of Object.entries(a)){
+    if(k === "class") e.className = v; else if(k.startsWith("on")) e[k] = v; else if(v !== false && v != null) e.setAttribute(k, v === true ? "" : v);
+  }
+  kids.flat().forEach(c => { if(c != null && c !== false) e.append(c.nodeType ? c : document.createTextNode(c)); });
+  return e;
+}
+const paras = t => String(t || "").split(/\n\s*\n/).map(p => h("p", p.trim())).filter(p => p.textContent);
+const fmt = d => d ? new Date(d).toLocaleDateString([], { year: "numeric", month: "long", day: "numeric" }) : "";
+let P = {}, S = {}, cats = [], photos = [], chapters = [], ints = [], socials = [];
+const G = { cat: "all", q: "", sort: "new", n: 12 };
+const catName = id => (cats.find(c => c.id === id) || {}).name || "";
+const SOC = { instagram: ["fa-brands fa-instagram", "Instagram"], tiktok: ["fa-brands fa-tiktok", "TikTok"], facebook: ["fa-brands fa-facebook-f", "Facebook"],
+  x: ["fa-brands fa-x-twitter", "X"], linkedin: ["fa-brands fa-linkedin-in", "LinkedIn"], whatsapp: ["fa-brands fa-whatsapp", "WhatsApp"] };
+const waNum = () => String(P.whatsapp_number || "").replace(/\D/g, "");
+const waUrl = () => "https://wa.me/" + waNum() + "?text=" + encodeURIComponent(S.wa_message || "Hello Reuben, I visited your website and would like to connect with you.");
+
+async function load(){
+  const t = n => sb.from(n).select("*");
+  const [a, b, c, d, e, f, g] = await Promise.all([
+    t("profiles").eq("id", 1).maybeSingle(), t("categories").order("display_order"),
+    t("photos").order("display_order").order("created_at", { ascending: false }), t("story_chapters").order("display_order"),
+    t("interests").order("display_order"), t("social_links").order("display_order"), t("site_settings")]);
+  if(a.error){ document.body.prepend(h("p", { class: "empty", style: "margin:0;text-align:center" }, "The site could not load its content. Check config.js and that schema.sql was run.")); return; }
+  P = a.data || {}; cats = b.data || []; photos = c.data || []; chapters = d.data || []; ints = e.data || []; socials = f.data || []; S = Object.fromEntries((g.data || []).map(r => [r.key, r.value]));
+  renderAll();
+}
+
+function socialList(){
+  const l = socials.filter(s => s.profile_url).map(s => ({ ...s, url: s.profile_url }));
+  if(waNum()) l.push({ platform: "whatsapp", url: waUrl() });
+  return l;
+}
+function fillSocial(id){
+  const box = $(id); box.innerHTML = "";
+  socialList().forEach(s => { const [ic, label] = SOC[s.platform] || ["fa-solid fa-link", s.platform];
+    box.append(h("a", { class: "soc", href: s.url, target: "_blank", rel: "noopener noreferrer", "aria-label": label, title: label }, h("i", { class: ic }))); });
+}
+
+function applySettings(){
+  document.querySelectorAll("[data-t]").forEach(el => { const v = S[el.dataset.t]; if(v) el.textContent = v; });
+  document.querySelectorAll("[data-ph]").forEach(el => { const v = S[el.dataset.ph]; if(v) el.placeholder = v; });
+  const r = document.documentElement.style;
+  if(S.color_navy) r.setProperty("--navy", S.color_navy); if(S.color_blue) r.setProperty("--blue", S.color_blue);
+  ["about", "photos", "story", "interests", "gallery", "contact"].forEach(k => {
+    const off = S["show_" + k] === "false"; $(k).classList.toggle("hide", off);
+    const a = document.querySelector('nav.menu a[data-s="' + k + '"]'); if(a) a.classList.toggle("hide", off); });
+  $("viewAll").classList.toggle("hide", S.show_gallery === "false");
+}
+function renderAll(){
+  applySettings();
+  const name = P.full_name || "Reuben Ngui", [f, ...r] = name.split(" "), last = r.join(" ");
+  ["b1", "h1a"].forEach(i => $(i).textContent = f); ["b2", "h1b"].forEach(i => $(i).textContent = last);
+  $("fName").textContent = name; $("fName2").textContent = name; $("yr").textContent = new Date().getFullYear();
+  document.title = name + " | Personal Portfolio";
+  if(P.meta_description) document.querySelector('meta[name="description"]').content = P.meta_description;
+  $("tagline").textContent = P.tagline || ""; $("heroIntro").textContent = P.hero_intro || "";
+  $("heroQuote").textContent = P.hero_quote ? "“" + P.hero_quote + "”" : "";
+  const hero = $("home"), img = $("portrait");
+  if(P.background_image_url) hero.style.backgroundImage = "url('" + P.background_image_url + "')";
+  img.hidden = !P.hero_image_url; if(P.hero_image_url) img.src = P.hero_image_url;
+  $("heroIn").classList.toggle("nop", !P.hero_image_url);
+  const facts = $("heroFacts"); facts.innerHTML = "";
+  const fact = (ic, a, b) => facts.append(h("div", { class: "fact" }, h("i", { class: "fa-solid " + ic }), h("div", null, h("b", a), b ? h("div", b) : null)));
+  if(P.location_label) fact("fa-location-dot", P.location_label);
+  if(P.born_info) fact("fa-cake-candles", "Born", P.born_info);
+  if(P.lifestyle) fact("fa-heart", "Living", P.lifestyle);
+
+  $("aboutText").textContent = P.about_text || "";
+  const hl = $("hl"); hl.innerHTML = "";
+  ints.filter(i => i.card_title).slice(0, 4).forEach(i => hl.append(h("button", { class: "icard", onclick: () => openInterest(i) },
+    h("i", { class: "fa-solid " + i.icon }), h("b", i.card_title), h("small", i.tagline || ""))));
+  const qf = $("facts"); qf.innerHTML = "";
+  [["fa-user", "Full Name", name], ["fa-location-dot", "Location", P.location], ["fa-graduation-cap", "Education", P.education],
+   ["fa-briefcase", "Work", P.occupation], ["fa-pen-nib", "Personal Motto", P.personal_motto ? "“" + P.personal_motto + "”" : ""]]
+   .filter(x => x[2]).forEach(([ic, l, v]) => qf.append(h("div", { class: "qf" }, h("i", { class: "fa-solid " + ic }), h("div", null, h("small", l), h("span", v)))));
+  $("storyIntro").textContent = P.story_intro || "";
+  const lv = $("loves"); lv.innerHTML = ""; ints.forEach(i => lv.append(h("button", { class: "tg", onclick: () => openInterest(i) }, i.title)));
+
+  const ig = $("igrid"); ig.innerHTML = "";
+  ints.forEach(i => ig.append(h("button", { class: "ic", onclick: () => openInterest(i) }, h("i", { class: "fa-solid " + i.icon }), h("h3", i.title), h("p", i.tagline || ""))));
+  if(!ints.length) ig.append(h("p", { class: "empty" }, "Interests are coming soon."));
+
+  fillSocial("heroSocial"); fillSocial("contactSocial"); fillSocial("footSocial");
+  $("fText").textContent = P.footer_text || ""; $("fQuote").textContent = P.footer_quote || "";
+  const wa = $("waBtn"); wa.hidden = !waNum(); if(waNum()) wa.href = waUrl();
+  const mb = $("mailBtn"); mb.hidden = !P.contact_email;
+  if(P.contact_email) mb.href = "mailto:" + P.contact_email + "?subject=" + encodeURIComponent(S.email_subject || "Hello from your website") + "&body=" + encodeURIComponent("Hello Reuben,\n\nI visited your website and would like to connect with you.\n");
+  renderFeatured(); renderChips(); renderGallery();
+}
+
+/* ---------- photos ---------- */
+function card(p, list){
+  return h("button", { class: "pc", onclick: () => openPhoto(p.id, list), "aria-label": "Open photo: " + p.title },
+    h("img", { src: p.thumbnail_url || p.image_url, alt: p.alt_text || p.title, loading: "lazy" }),
+    h("span", { class: "cap" }, h("b", p.title), p.caption || ""));
+}
+function renderFeatured(){
+  const f = photos.filter(p => p.is_featured), list = (f.length ? f : photos).slice(0, 8), box = $("featured"); box.innerHTML = "";
+  list.forEach(p => box.append(card(p, list)));
+  if(!list.length) box.append(h("p", { class: "empty" }, "Photos are coming soon."));
+}
+function renderChips(){
+  const box = $("chips"); box.innerHTML = "";
+  const used = cats.filter(c => photos.some(p => p.category_id === c.id));
+  [{ id: "all", name: S.chip_all || "All" }, ...used].forEach(c => box.append(h("button", { class: "chip" + (G.cat === c.id ? " on" : ""), "aria-pressed": G.cat === c.id, onclick: () => { G.cat = c.id; G.n = 12; renderChips(); renderGallery(); } }, c.name)));
+}
+function galleryList(){
+  const q = G.q.toLowerCase();
+  let l = photos.filter(p => (G.cat === "all" || p.category_id === G.cat) &&
+    (!q || [p.title, p.caption, p.memory, p.location, catName(p.category_id)].some(x => (x || "").toLowerCase().includes(q))));
+  const k = p => new Date(p.photo_date || p.created_at).getTime();
+  if(G.sort === "new") l = l.slice().sort((a, b) => k(b) - k(a)); else if(G.sort === "old") l = l.slice().sort((a, b) => k(a) - k(b));
+  else l = l.slice().sort((a, b) => a.title.localeCompare(b.title));
+  return l;
+}
+function renderGallery(){
+  const l = galleryList(), box = $("ggrid"); box.innerHTML = "";
+  l.slice(0, G.n).forEach(p => box.append(card(p, l)));
+  if(!l.length) box.append(h("p", { class: "empty" }, "No photos match your search."));
+  $("more").hidden = l.length <= G.n;
+}
+$("gq").oninput = e => { G.q = e.target.value; G.n = 12; renderGallery(); };
+$("gs").onchange = e => { G.sort = e.target.value; renderGallery(); };
+$("more").onclick = () => { G.n += 12; renderGallery(); };
+
+/* ---------- dialog ---------- */
+const dlg = $("dlg"); let LB = { list: [], i: 0 };
+function openDlg(...nodes){ const b = $("dlgBody"); b.innerHTML = ""; b.append(...nodes); if(!dlg.open) dlg.showModal(); }
+$("dx").onclick = () => dlg.close(); dlg.addEventListener("click", e => { if(e.target === dlg) dlg.close(); });
+dlg.addEventListener("close", () => { LB.on = false; });
+function openPhoto(id, list){
+  LB.list = (list && list.some(p => p.id === id)) ? list : photos; LB.i = Math.max(0, LB.list.findIndex(p => p.id === id)); showPhoto();
+}
+function showPhoto(){
+  const p = LB.list[LB.i]; LB.on = true;
+  const meta = [catName(p.category_id), fmt(p.photo_date), p.location].filter(Boolean).join(" · ");
+  openDlg(h("div", { class: "lb" }, h("img", { src: p.image_url, alt: p.alt_text || p.title }), h("h3", p.title), p.caption ? h("p", { class: "meta" }, p.caption) : null,
+    meta ? h("p", { class: "meta" }, meta) : null, ...paras(p.memory),
+    h("div", { class: "nv" }, h("button", { class: "btn", onclick: () => step(-1) }, h("i", { class: "fa-solid fa-arrow-left" }), " Previous"),
+      h("span", { class: "meta" }, (LB.i + 1) + " / " + LB.list.length), h("button", { class: "btn", onclick: () => step(1) }, "Next ", h("i", { class: "fa-solid fa-arrow-right" })))));
+}
+function step(d){ LB.i = (LB.i + d + LB.list.length) % LB.list.length; showPhoto(); }
+document.addEventListener("keydown", e => { if(LB.on && dlg.open){ if(e.key === "ArrowRight") step(1); if(e.key === "ArrowLeft") step(-1); } });
+
+function openInterest(i){
+  openDlg(h("h2", { style: "display:block" }, h("i", { class: "fa-solid " + i.icon, style: "color:var(--blue);margin-right:10px" }), i.title),
+    i.tagline ? h("p", { class: "meta" }, i.tagline) : null, i.image_url ? h("img", { src: i.image_url, alt: i.title, style: "width:100%;border-radius:12px" }) : null,
+    ...(i.description ? paras(i.description) : [h("p", "More about this is coming soon.")]),
+    h("button", { class: "btn", onclick: () => { dlg.close(); G.q = i.title.split(" ")[0]; $("gq").value = G.q; G.cat = "all"; renderChips(); renderGallery(); location.hash = "gallery"; } }, "See related photos ", h("i", { class: "fa-solid fa-arrow-right" })));
+}
+function openStory(focusId){
+  const pub = chapters.filter(c => c.content || c.cover_image_url);
+  const nodes = [h("h2", { style: "display:block" }, "My Story"), h("p", P.story_intro || "")];
+  if(!pub.length) nodes.push(h("p", { class: "empty" }, "My chapters are being written. Check back soon."));
+  pub.forEach(c => nodes.push(h("div", { class: "ch", id: "ch" + c.id }, h("h3", c.title), c.chapter_date ? h("p", { class: "meta" }, fmt(c.chapter_date)) : null,
+    c.cover_image_url ? h("img", { src: c.cover_image_url, alt: c.title }) : null, ...paras(c.content))));
+  openDlg(...nodes); if(focusId){ const el = document.getElementById("ch" + focusId); if(el) el.scrollIntoView(); }
+}
+function openAbout(){
+  openDlg(h("h2", { style: "display:block" }, "About " + (P.full_name || "Reuben Ngui")), ...paras(P.about_long || P.about_text),
+    h("p", { class: "meta" }, [P.location, P.education, P.occupation].filter(Boolean).join(" · ")));
+}
+$("moreAbout").onclick = openAbout; $("readStory").onclick = () => openStory();
+
+/* ---------- header search ---------- */
+const q = $("q"), sres = $("sres"); let hits = [], cur = -1;
+function runSearch(){
+  const s = q.value.toLowerCase().trim(); hits = []; cur = -1; sres.innerHTML = "";
+  if(!s){ sres.hidden = true; return; }
+  const has = (...f) => f.some(x => (x || "").toLowerCase().includes(s));
+  photos.filter(p => has(p.title, p.caption, p.memory, p.location)).slice(0, 5).forEach(p => hits.push({ k: "Photo", t: p.title, d: p.caption, go: () => openPhoto(p.id, photos) }));
+  chapters.filter(c => has(c.title, c.content)).slice(0, 3).forEach(c => hits.push({ k: "Story", t: c.title, go: () => openStory(c.id) }));
+  ints.filter(i => has(i.title, i.card_title, i.tagline, i.description)).slice(0, 3).forEach(i => hits.push({ k: "Interest", t: i.title, d: i.tagline, go: () => openInterest(i) }));
+  if(has(P.about_text, P.about_long, P.education, P.occupation, P.personal_motto)) hits.push({ k: "About", t: "About Reuben", go: openAbout });
+  if(!hits.length) sres.append(h("p", { style: "padding:10px" }, "No results for “" + q.value + "”."));
+  hits.forEach((x, n) => sres.append(h("button", { role: "option", onclick: () => pickHit(n) }, h("b", x.t), h("small", x.k + (x.d ? " · " + x.d : "")))));
+  sres.hidden = false;
+}
+function pickHit(n){ const x = hits[n]; if(!x) return; q.value = ""; sres.hidden = true; x.go(); }
+function mark(){ [...sres.children].forEach((b, n) => b.classList.toggle("on", n === cur)); }
+q.addEventListener("input", runSearch);
+q.addEventListener("keydown", e => {
+  if(e.key === "ArrowDown"){ e.preventDefault(); cur = Math.min(hits.length - 1, cur + 1); mark(); }
+  else if(e.key === "ArrowUp"){ e.preventDefault(); cur = Math.max(0, cur - 1); mark(); }
+  else if(e.key === "Enter"){ e.preventDefault(); pickHit(cur < 0 ? 0 : cur); }
+  else if(e.key === "Escape"){ q.value = ""; sres.hidden = true; }
+});
+document.addEventListener("click", e => { if(!e.target.closest(".search")) sres.hidden = true; });
+
+/* ---------- contact form ---------- */
+$("cf").onsubmit = async e => {
+  e.preventDefault(); const m = $("cmsg"); m.className = "msg";
+  const body = { name: $("cn").value.trim(), email: $("ce").value.trim(), subject: $("cs").value.trim(), message: $("cm").value.trim(), website: $("cw").value };
+  if(body.name.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email) || body.subject.length < 2 || body.message.length < 5){
+    m.className = "msg err"; m.textContent = "Please fill in every field with a valid email address."; return; }
+  $("csend").disabled = true; m.textContent = "Sending…";
+  try{
+    const r = await fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const j = await r.json().catch(() => ({}));
+    if(r.ok && j.ok){ m.className = "msg ok"; m.textContent = "Thank you! Your message has been sent."; $("cf").reset(); }
+    else { m.className = "msg err"; m.textContent = j.error === "rate" ? "Too many messages. Please try again later." : j.error === "not_configured" ? "The contact form is not set up yet. Please use WhatsApp or email instead." : "Your message could not be sent. Please try WhatsApp or email."; }
+  }catch{ m.className = "msg err"; m.textContent = "Network error. Your message was not sent."; }
+  $("csend").disabled = false;
+};
+
+/* ---------- navigation ---------- */
+const sections = ["home", "about", "photos", "story", "interests", "gallery", "contact"];
+function spy(){ let on = "home"; sections.forEach(s => { const el = $(s); if(el && el.getBoundingClientRect().top <= 110) on = s; });
+  document.querySelectorAll("nav.menu a").forEach(a => a.classList.toggle("on", a.dataset.s === on)); }
+addEventListener("scroll", spy, { passive: true }); spy();
+$("burger").onclick = () => { const o = $("menu").classList.toggle("open"); $("burger").setAttribute("aria-expanded", o); };
+$("menu").addEventListener("click", e => { if(e.target.closest("a")){ $("menu").classList.remove("open"); $("burger").setAttribute("aria-expanded", "false"); } });
+document.addEventListener("visibilitychange", () => !document.hidden && load());
+$("yr").textContent = new Date().getFullYear();
+load();
+</script>
+</body>
+</html>
